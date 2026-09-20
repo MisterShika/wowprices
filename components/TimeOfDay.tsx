@@ -48,21 +48,25 @@ export default function TimeOfDay({ prices }: Props) {
   const periods = [
     {
       name: "Morning",
+      time: "6:00 AM – 11:59 AM",
       averagePrice: getAverage(morning),
       count: morning.length,
     },
     {
       name: "Afternoon",
+      time: "12:00 PM – 5:59 PM",
       averagePrice: getAverage(afternoon),
       count: afternoon.length,
     },
     {
       name: "Evening",
+      time: "6:00 PM – 11:59 PM",
       averagePrice: getAverage(evening),
       count: evening.length,
     },
     {
       name: "Night",
+      time: "12:00 AM – 5:59 AM",
       averagePrice: getAverage(night),
       count: night.length,
     },
@@ -117,6 +121,10 @@ export default function TimeOfDay({ prices }: Props) {
               <h3 className="font-semibold">
                 {period.name}
               </h3>
+
+              <p className="text-xs text-gray-400">
+                {period.time}
+              </p>
 
               <p
                 className={`text-xl font-bold ${priceColor}`}

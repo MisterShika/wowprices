@@ -4,6 +4,7 @@ import PriceButton from "@/components/PriceButton";
 import MostRecentSubmissions from "@/components/MostRecentSubmissions";
 import PriceHistoryGraph from "@/components/PriceHistoryGraph";
 import AveragePrice from "@/components/AveragePrice";
+import CurrentPrice from "@/components/CurrentPrice";
 import MinPrice from "@/components/MinPrice";
 import MaxPrice from "@/components/MaxPrice";
 import TimeOfDay from "@/components/TimeOfDay";
@@ -91,30 +92,75 @@ export default async function ItemPage({ params }: Props) {
     );
   }
 
+  function getRarityColor(rarity: string | null) {
+    switch (rarity) {
+      case "Common":
+        return "text-white";
+      case "Uncommon":
+        return "text-green-400";
+      case "Rare":
+        return "text-blue-400";
+      case "Epic":
+        return "text-purple-400";
+      case "Legendary":
+        return "text-orange-400";
+      default:
+        return "text-yellow-400";
+    }
+  }
+
+  function formatPrice(copper: number) {
+    const gold = Math.floor(copper / 10000);
+    const silver = Math.floor((copper % 10000) / 100);
+    const remainingCopper = copper % 100;
+
+    return `${gold}g ${silver}s ${remainingCopper}c`;
+  }
+
   return (
     <AuthGate>
       <main>
         <Header />
 
-        <div className="text-center mt-8">
+        <div className="text-center">
 
-          <img
-            src={`/icons/${item.icon}.jpg`}
-            alt={item.name}
-            className="w-16 h-16 mx-auto rounded"
-          />
 
-          <h1 className="text-3xl font-bold text-yellow-400 mt-3">
-            {item.name}
-          </h1>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
+            <img
+              src={`/icons/${item.icon}.jpg`}
+              alt={item.name}
+              className="w-16 h-16 rounded"
+            />
 
-          <p className="text-gray-300 mt-1">
-            Rarity: {item.rarity ?? "None"}
-          </p>
+            <div>
+              <h1
+                className={`text-3xl font-bold ${getRarityColor(
+                  item.rarity
+                )}`}
+              >
+                {item.name}
+              </h1>
 
-          <p className="text-gray-300 mt-1">
-            Base Sale Price: {item.base_sale_price}
-          </p>
+              <p className="text-gray-300 mt-1">
+                Vendor Price: {formatPrice(item.base_sale_price)}
+              </p>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 flex flex-col sm:flex-row justify-around gap-4">
+            <CurrentPrice
+              price={priceValues[priceValues.length - 1] ?? 0}
+            />
+            <AveragePrice price={averagePrice} />
+            <MaxPrice price={maxPrice} />
+            <MinPrice price={minPrice} />
+          </div>
+
+          <div className="md:col-span-1 flex flex-col justify-center px-4">
+            <PriceButton itemId={item.id} />
+          </div>
+        </div>
 
           {/* You can rearrange these however you want */}
 
@@ -125,19 +171,16 @@ export default async function ItemPage({ params }: Props) {
             averagePrice={averagePrice}
           />
 
-          <AveragePrice price={averagePrice} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 mt-4 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <TimeOfDay prices={priceData} />
+              <DayOfWeek prices={priceData} />
+            </div>
 
-          <MaxPrice price={maxPrice} />
-
-          <MinPrice price={minPrice} />
-
-          <TimeOfDay prices={priceData} />
-
-          <DayOfWeek prices={priceData} />
-
-          <DayOfWeekTimeOfDay prices={priceData} />
-
-          <PriceButton itemId={item.id} />
+            <div>
+              <DayOfWeekTimeOfDay prices={priceData} />
+            </div>
+          </div>
 
           <MostRecentSubmissions
             itemId={item.id}
