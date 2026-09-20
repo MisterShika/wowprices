@@ -10,12 +10,26 @@ import MaxPrice from "@/components/MaxPrice";
 import TimeOfDay from "@/components/TimeOfDay";
 import DayOfWeek from "@/components/DayOfWeek";
 import DayOfWeekTimeOfDay from "@/components/DayOfWeekTimeOfDay";
+import Components from "@/components/Components";
 import AuthGate from "@/components/AuthGate";
+import { getItemIconUrl } from "@/lib/itemIcon";
 
 type Props = {
   params: Promise<{
     id: string;
   }>;
+};
+
+type ComponentRow = {
+  quantity: number;
+  component: {
+    id: number;
+    name: string;
+    icon: string;
+    current_price: number | null;
+    average_price: number | null;
+    purchase_price: number | null;
+  };
 };
 
 export default async function ItemPage({ params }: Props) {
@@ -25,7 +39,17 @@ export default async function ItemPage({ params }: Props) {
 
   const { data: item, error } = await supabase
     .from("items")
-    .select("id, name, icon, rarity, base_sale_price")
+    .select(`
+      id,
+      name,
+      icon,
+      rarity,
+      base_sale_price,
+      current_price,
+      min_price,
+      max_price,
+      average_price
+    `)
     .eq("id", id)
     .single();
 
@@ -45,7 +69,7 @@ export default async function ItemPage({ params }: Props) {
     );
   }
 
-  // Get price data
+  // Get price history
   const { data: prices, error: priceError } = await supabase
     .from("price_checks")
     .select("created_at, sale_price")
@@ -58,52 +82,57 @@ export default async function ItemPage({ params }: Props) {
 
   const priceData = prices ?? [];
 
-  // Calculate statistics
-  const priceValues = priceData.map(
-    (price) => price.sale_price
-  );
-
-  const minPrice =
-    priceValues.length > 0
-      ? Math.min(...priceValues)
-      : 0;
-
-  const maxPrice =
-    priceValues.length > 0
-      ? Math.max(...priceValues)
-      : 0;
-
-  const averagePrice =
-    priceValues.length > 0
-      ? Math.round(
-          priceValues.reduce(
-            (sum, price) => sum + price,
-            0
-          ) / priceValues.length
+  // Get item components
+  const { data: componentData, error: componentError } =
+    await supabase
+      .from("item_components")
+      .select(`
+        quantity,
+        component:items!item_components_component_fkey (
+          id,
+          name,
+          icon,
+          current_price,
+          average_price,
+          purchase_price
         )
-      : 0;
+      `)
+      .eq("item_id", item.id);
 
-  const frequency = new Map<number, number>();
-
-  for (const price of priceValues) {
-    frequency.set(
-      price,
-      (frequency.get(price) ?? 0) + 1
-    );
+  if (componentError) {
+    console.error(componentError);
   }
+
+  const components =
+    (componentData as ComponentRow[] | null)?.map(
+      (row) => ({
+        id: row.component.id,
+        name: row.component.name,
+        icon: row.component.icon,
+        current_price: row.component.current_price,
+        average_price: row.component.average_price,
+        purchase_price: row.component.purchase_price,
+        quantity: row.quantity,
+      })
+    ) ?? [];
 
   function getRarityColor(rarity: string | null) {
     switch (rarity) {
       case "Common":
         return "text-white";
+
       case "Uncommon":
         return "text-green-400";
+
       case "Rare":
         return "text-blue-400";
+
       case "Epic":
         return "text-purple-400";
+
       case "Legendary":
         return "text-orange-400";
+
       default:
         return "text-yellow-400";
     }
@@ -124,64 +153,99 @@ export default async function ItemPage({ params }: Props) {
 
         <div className="text-center">
 
+          {/* Top section */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
-            <img
-              src={`/icons/${item.icon}.jpg`}
-              alt={item.name}
-              className="w-16 h-16 rounded"
-            />
+            {/* Item information */}
+            <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
+              <img
+                src={getItemIconUrl(item.icon)}
+                alt={item.name}
+                className="w-16 h-16 rounded"
+              />
 
-            <div>
-              <h1
-                className={`text-3xl font-bold ${getRarityColor(
-                  item.rarity
-                )}`}
-              >
-                {item.name}
-              </h1>
+              <div>
+                <h1
+                  className={`text-3xl font-bold ${getRarityColor(
+                    item.rarity
+                  )}`}
+                >
+                  {item.name}
+                </h1>
 
-              <p className="text-gray-300 mt-1">
-                Vendor Price: {formatPrice(item.base_sale_price)}
-              </p>
+                <p className="text-gray-300 mt-1">
+                  Vendor Price:{" "}
+                  {formatPrice(item.base_sale_price)}
+                </p>
+              </div>
             </div>
+
+            {/* Price statistics */}
+            <div className="md:col-span-2 flex flex-col sm:flex-row justify-around gap-4">
+              <CurrentPrice
+                price={item.current_price ?? 0}
+                average={item.average_price ?? 0}
+              />
+
+              <AveragePrice
+                price={item.average_price ?? 0}
+              />
+
+              <MaxPrice
+                price={item.max_price ?? 0}
+              />
+
+              <MinPrice
+                price={item.min_price ?? 0}
+              />
+            </div>
+
+            {/* Add price button */}
+            <div className="md:col-span-1 flex flex-col justify-center px-4">
+              <PriceButton itemId={item.id} />
+            </div>
+
           </div>
 
-          <div className="md:col-span-2 flex flex-col sm:flex-row justify-around gap-4">
-            <CurrentPrice
-              price={priceValues[priceValues.length - 1] ?? 0}
-            />
-            <AveragePrice price={averagePrice} />
-            <MaxPrice price={maxPrice} />
-            <MinPrice price={minPrice} />
-          </div>
-
-          <div className="md:col-span-1 flex flex-col justify-center px-4">
-            <PriceButton itemId={item.id} />
-          </div>
-        </div>
-
-          {/* You can rearrange these however you want */}
-
+          {/* Price history */}
           <PriceHistoryGraph
             prices={priceData}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            averagePrice={averagePrice}
+            minPrice={item.min_price ?? 0}
+            maxPrice={item.max_price ?? 0}
+            averagePrice={item.average_price ?? 0}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 mt-4 gap-4">
+          {/* Components */}
+          {components.length > 0 && (
+            <div>
+              <Components
+                components={components}
+              />
+            </div>
+          )}
+
+          {/* Time and day analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <TimeOfDay prices={priceData} />
-              <DayOfWeek prices={priceData} />
+              <TimeOfDay
+                prices={priceData}
+              />
+
+              <DayOfWeek
+                prices={priceData}
+              />
             </div>
 
             <div>
-              <DayOfWeekTimeOfDay prices={priceData} />
+              <DayOfWeekTimeOfDay
+                prices={priceData}
+              />
             </div>
+
           </div>
 
+          {/* Recent submissions */}
           <MostRecentSubmissions
             itemId={item.id}
           />

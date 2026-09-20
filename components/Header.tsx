@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { getItemIconUrl } from "@/lib/itemIcon";
 
 type Item = {
   id: number;
@@ -66,7 +67,7 @@ export default function Header() {
                   className="flex items-center gap-3 w-full px-3 py-2 text-left text-gray-800 hover:bg-gray-100"
                 >
                   <img
-                    src={`/icons/${item.icon}.jpg`}
+                    src={getItemIconUrl(item.icon)}
                     alt=""
                     className="w-8 h-8 rounded"
                   />

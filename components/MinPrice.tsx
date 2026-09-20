@@ -12,7 +12,7 @@ function formatPrice(copper: number) {
 
 export default function MinPrice({ price }: Props) {
   return (
-    <div className="bg-mist-800 text-white p-4 rounded-md">
+    <div className="bg-mist-800 text-white p-1 sm:p-4 rounded-md">
       <h2 className="text-xl font-bold">
         Min Price
       </h2>

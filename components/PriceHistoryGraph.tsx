@@ -113,7 +113,7 @@ export default function PriceHistoryGraph({
   const xAxisFormatter = getXAxisFormatter(prices);
 
   return (
-    <div className="bg-mist-800 text-white p-4 rounded-md">
+    <div className="bg-mist-800 text-white p-2 rounded-md">
       <h2 className="text-xl font-bold mb-4">
         Price History
       </h2>
@@ -142,6 +142,18 @@ export default function PriceHistoryGraph({
               formatter={(value) =>
                 formatPrice(Number(value))
               }
+              contentStyle={{
+                backgroundColor: "#000",
+                border: "1px solid #555",
+                borderRadius: "6px",
+                color: "#fff",
+              }}
+              labelStyle={{
+                color: "#fff",
+              }}
+              itemStyle={{
+                color: "#facc15",
+              }}
             />
 
             <ReferenceLine

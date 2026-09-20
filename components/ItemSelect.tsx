@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { getItemIconUrl } from "@/lib/itemIcon";
 
 type Item = {
   id: number;
@@ -93,7 +94,7 @@ export default function ItemSelect() {
                   className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-100"
                 >
                   <img
-                    src={`/icons/${item.icon}.jpg`}
+                    src={getItemIconUrl(item.icon)}
                     alt=""
                     className="w-8 h-8 rounded"
                   />
@@ -122,7 +123,7 @@ export default function ItemSelect() {
                 {marqueeIcons.map((icon, index) => (
                   <img
                     key={`top-1-${index}`}
-                    src={`/icons/${icon}.jpg`}
+                    src={getItemIconUrl(icon)}
                     alt=""
                     className="w-10 h-10 rounded"
                   />
@@ -133,7 +134,7 @@ export default function ItemSelect() {
                 {marqueeIcons.map((icon, index) => (
                   <img
                     key={`top-2-${index}`}
-                    src={`/icons/${icon}.jpg`}
+                    src={getItemIconUrl(icon)}
                     alt=""
                     className="w-10 h-10 rounded"
                   />
@@ -171,7 +172,7 @@ export default function ItemSelect() {
                 {marqueeIcons.map((icon, index) => (
                   <img
                     key={`bottom-1-${index}`}
-                    src={`/icons/${icon}.jpg`}
+                    src={getItemIconUrl(icon)}
                     alt=""
                     className="w-10 h-10 rounded"
                   />
@@ -182,7 +183,7 @@ export default function ItemSelect() {
                 {marqueeIcons.map((icon, index) => (
                   <img
                     key={`bottom-2-${index}`}
-                    src={`/icons/${icon}.jpg`}
+                    src={getItemIconUrl(icon)}
                     alt=""
                     className="w-10 h-10 rounded"
                   />

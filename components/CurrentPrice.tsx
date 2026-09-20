@@ -1,5 +1,6 @@
 type Props = {
   price: number;
+  average: number;
 };
 
 function formatPrice(copper: number) {
@@ -10,11 +11,29 @@ function formatPrice(copper: number) {
   return `${gold}g ${silver}s ${remainingCopper}c`;
 }
 
-export default function CurrentPrice({ price }: Props) {
+export default function CurrentPrice({
+  price,
+  average,
+}: Props) {
   const minimumSalePrice = Math.ceil(price * 1.06);
 
+  const priceComparison =
+    price > average
+      ? "Price is above average"
+      : price < average
+        ? "Price is below average"
+        : "Price is at average";
+
+  const comparisonColor =
+    price > average
+      ? "text-green-400"
+      : price < average
+        ? "text-red-400"
+        : "text-gray-400";
+
   return (
-    <div className="bg-mist-800 text-white p-4 rounded-md">
+    <div className="bg-mist-800 text-white p-1 sm:p-4 rounded-md">
+
       <h2 className="text-xl font-bold">
         Current Price
       </h2>
@@ -23,12 +42,17 @@ export default function CurrentPrice({ price }: Props) {
         {formatPrice(price)}
       </p>
 
-        <p className="text-xs text-gray-400 mt-1">
+      <p className={`text-xs ${comparisonColor} mt-1`}>
+        {priceComparison}
+      </p>
+
+      <p className="text-xs text-gray-400 mt-1">
         Profit threshold:{" "}
         <span className="text-yellow-400 font-bold">
-            {formatPrice(minimumSalePrice)}
+          {formatPrice(minimumSalePrice)}
         </span>
-        </p>
+      </p>
+
     </div>
   );
 }
