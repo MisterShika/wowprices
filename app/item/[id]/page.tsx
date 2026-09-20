@@ -6,6 +6,9 @@ import PriceHistoryGraph from "@/components/PriceHistoryGraph";
 import AveragePrice from "@/components/AveragePrice";
 import MinPrice from "@/components/MinPrice";
 import MaxPrice from "@/components/MaxPrice";
+import TimeOfDay from "@/components/TimeOfDay";
+import DayOfWeek from "@/components/DayOfWeek";
+import DayOfWeekTimeOfDay from "@/components/DayOfWeekTimeOfDay";
 import AuthGate from "@/components/AuthGate";
 
 type Props = {
@@ -88,15 +91,6 @@ export default async function ItemPage({ params }: Props) {
     );
   }
 
-  const modeEntry = [...frequency.entries()].sort(
-    (a, b) => b[1] - a[1]
-  )[0];
-
-  const modePrice =
-    modeEntry && modeEntry[1] > 1
-      ? modeEntry[0]
-      : null;
-
   return (
     <AuthGate>
       <main>
@@ -129,7 +123,6 @@ export default async function ItemPage({ params }: Props) {
             minPrice={minPrice}
             maxPrice={maxPrice}
             averagePrice={averagePrice}
-            modePrice={modePrice}
           />
 
           <AveragePrice price={averagePrice} />
@@ -137,6 +130,12 @@ export default async function ItemPage({ params }: Props) {
           <MaxPrice price={maxPrice} />
 
           <MinPrice price={minPrice} />
+
+          <TimeOfDay prices={priceData} />
+
+          <DayOfWeek prices={priceData} />
+
+          <DayOfWeekTimeOfDay prices={priceData} />
 
           <PriceButton itemId={item.id} />
 

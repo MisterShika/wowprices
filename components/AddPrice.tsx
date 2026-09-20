@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type AddPriceProps = {
@@ -12,6 +13,8 @@ export default function AddPrice({
   itemId,
   onClose,
 }: AddPriceProps) {
+  const router = useRouter();
+
   const [gold, setGold] = useState("");
   const [silver, setSilver] = useState("");
   const [copper, setCopper] = useState("");
@@ -63,7 +66,9 @@ export default function AddPrice({
     setSilver("");
     setCopper("");
 
-    window.dispatchEvent(new Event("price-submitted"));
+    // Refresh the Server Components so the graph,
+    // statistics, and submissions update
+    router.refresh();
 
     // Close the popup
     onClose();

@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import OopsieButton from "@/components/OopsieButton";
 
 type Props = {
   itemId: number;
@@ -17,6 +18,12 @@ export default async function MostRecentSubmissions({
 }: Props) {
   const supabase = await createSupabaseServerClient();
 
+  const {
+    data: {
+      user,
+    },
+  } = await supabase.auth.getUser();
+
   const { data: submissions, error } = await supabase
     .from("price_checks")
     .select("id, sale_price, created_at, user_id")
@@ -33,12 +40,19 @@ export default async function MostRecentSubmissions({
   }
 
   // Get the profiles for the users who submitted these prices
-  const userIds = [...new Set(submissions.map((submission) => submission.user_id))];
+  const userIds = [
+    ...new Set(
+      submissions.map((submission) => submission.user_id)
+    ),
+  ];
 
-  const { data: profiles, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, display_name")
-    .in("id", userIds);
+  const { data: profiles, error: profileError } =
+    userIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", userIds)
+      : { data: [], error: null };
 
   if (profileError) {
     return (
@@ -49,7 +63,10 @@ export default async function MostRecentSubmissions({
   }
 
   const profileMap = new Map(
-    profiles.map((profile) => [profile.id, profile.display_name])
+    profiles.map((profile) => [
+      profile.id,
+      profile.display_name,
+    ])
   );
 
   return (
@@ -69,18 +86,28 @@ export default async function MostRecentSubmissions({
               key={submission.id}
               className="flex justify-between items-center"
             >
-              <div>
+              <div className="flex items-center">
                 <span className="font-semibold">
                   {formatPrice(submission.sale_price)}
                 </span>
 
                 <span className="ml-3 text-sm text-gray-400">
-                  {profileMap.get(submission.user_id) ?? "Unknown User"}
+                  {profileMap.get(submission.user_id) ??
+                    "Unknown User"}
                 </span>
+
+                {user &&
+                  submission.user_id === user.id && (
+                    <OopsieButton
+                      priceCheckId={submission.id}
+                    />
+                  )}
               </div>
 
               <span className="text-sm text-gray-400">
-                {new Date(submission.created_at).toLocaleString()}
+                {new Date(
+                  submission.created_at
+                ).toLocaleString()}
               </span>
             </div>
           ))}

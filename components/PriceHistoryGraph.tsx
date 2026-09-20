@@ -21,7 +21,6 @@ type Props = {
   minPrice: number;
   maxPrice: number;
   averagePrice: number;
-  modePrice: number | null;
 };
 
 function formatPrice(copper: number) {
@@ -97,7 +96,6 @@ export default function PriceHistoryGraph({
   minPrice,
   maxPrice,
   averagePrice,
-  modePrice,
 }: Props) {
   if (prices.length === 0) {
     return (
@@ -148,7 +146,7 @@ export default function PriceHistoryGraph({
 
             <ReferenceLine
               y={minPrice}
-              stroke="#888"
+              stroke="#ef4444"
               strokeDasharray="5 5"
               label={{
                 value: `Min: ${formatPrice(minPrice)}`,
@@ -158,7 +156,7 @@ export default function PriceHistoryGraph({
 
             <ReferenceLine
               y={maxPrice}
-              stroke="#888"
+              stroke="#22c55e"
               strokeDasharray="5 5"
               label={{
                 value: `Max: ${formatPrice(maxPrice)}`,
@@ -168,25 +166,13 @@ export default function PriceHistoryGraph({
 
             <ReferenceLine
               y={averagePrice}
-              stroke="#fff"
+              stroke="#3b82f6"
               strokeDasharray="5 5"
               label={{
                 value: `Average: ${formatPrice(averagePrice)}`,
                 position: "insideTopRight",
               }}
             />
-
-            {modePrice !== null && (
-              <ReferenceLine
-                y={modePrice}
-                stroke="#aaa"
-                strokeDasharray="5 5"
-                label={{
-                  value: `Mode: ${formatPrice(modePrice)}`,
-                  position: "insideTopRight",
-                }}
-              />
-            )}
 
             <Line
               type="linear"
