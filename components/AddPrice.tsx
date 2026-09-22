@@ -18,6 +18,7 @@ export default function AddPrice({
   const [gold, setGold] = useState("");
   const [silver, setSilver] = useState("");
   const [copper, setCopper] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,6 +29,7 @@ export default function AddPrice({
     const goldValue = Number(gold) || 0;
     const silverValue = Number(silver) || 0;
     const copperValue = Number(copper) || 0;
+    const quantityValue = Number(quantity) || 0;
 
     const totalCopper =
       goldValue * 10000 +
@@ -36,6 +38,11 @@ export default function AddPrice({
 
     if (totalCopper <= 0) {
       setError("Please enter a price.");
+      return;
+    }
+
+    if (quantityValue <= 0) {
+      setError("Please enter the total quantity.");
       return;
     }
 
@@ -54,6 +61,7 @@ export default function AddPrice({
         item_id: itemId,
         user_id: user.id,
         sale_price: totalCopper,
+        total_quantity: quantityValue,
       });
 
     if (error) {
@@ -65,6 +73,7 @@ export default function AddPrice({
     setGold("");
     setSilver("");
     setCopper("");
+    setQuantity("");
 
     // Refresh the Server Components so the graph,
     // statistics, and submissions update
@@ -94,6 +103,7 @@ export default function AddPrice({
           onSubmit={handleSubmit}
           className="flex flex-col items-center gap-4"
         >
+          {/* Price */}
           <div className="flex gap-2">
             <input
               type="number"
@@ -122,6 +132,17 @@ export default function AddPrice({
               className="w-24 bg-white text-gray-800 px-3 py-2 rounded-md"
             />
           </div>
+
+          {/* Total quantity */}
+          <input
+            type="number"
+            min="1"
+            step="1"
+            placeholder="Total Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            className="w-full max-w-xs bg-white text-gray-800 px-3 py-2 rounded-md"
+          />
 
           <button
             type="submit"

@@ -2,14 +2,13 @@ import Header from "@/components/Header";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import PriceButton from "@/components/PriceButton";
 import MostRecentSubmissions from "@/components/MostRecentSubmissions";
-import PriceHistoryGraph from "@/components/PriceHistoryGraph";
 import AveragePrice from "@/components/AveragePrice";
 import CurrentPrice from "@/components/CurrentPrice";
 import MinPrice from "@/components/MinPrice";
 import MaxPrice from "@/components/MaxPrice";
-import TimeOfDay from "@/components/TimeOfDay";
-import DayOfWeek from "@/components/DayOfWeek";
-import DayOfWeekTimeOfDay from "@/components/DayOfWeekTimeOfDay";
+
+import PriceAnalysis from "@/components/PriceAnalysis";
+
 import Components from "@/components/Components";
 import AuthGate from "@/components/AuthGate";
 import { getItemIconUrl } from "@/lib/itemIcon";
@@ -72,7 +71,7 @@ export default async function ItemPage({ params }: Props) {
   // Get price history
   const { data: prices, error: priceError } = await supabase
     .from("price_checks")
-    .select("created_at, sale_price")
+    .select("created_at, sale_price, total_quantity")
     .eq("item_id", item.id)
     .order("created_at", { ascending: true });
 
@@ -207,8 +206,8 @@ export default async function ItemPage({ params }: Props) {
 
           </div>
 
-          {/* Price history */}
-          <PriceHistoryGraph
+          {/* Price analysis */}
+          <PriceAnalysis
             prices={priceData}
             minPrice={item.min_price ?? 0}
             maxPrice={item.max_price ?? 0}
@@ -223,27 +222,6 @@ export default async function ItemPage({ params }: Props) {
               />
             </div>
           )}
-
-          {/* Time and day analysis */}
-          <div className="grid grid-cols-1 md:grid-cols-2 mt-4 gap-4">
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <TimeOfDay
-                prices={priceData}
-              />
-
-              <DayOfWeek
-                prices={priceData}
-              />
-            </div>
-
-            <div>
-              <DayOfWeekTimeOfDay
-                prices={priceData}
-              />
-            </div>
-
-          </div>
 
           {/* Recent submissions */}
           <MostRecentSubmissions

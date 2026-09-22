@@ -14,6 +14,7 @@ import {
 type PricePoint = {
   created_at: string;
   sale_price: number;
+  total_quantity: number | null;
 };
 
 type Props = {
@@ -29,6 +30,10 @@ function formatPrice(copper: number) {
   const remainingCopper = copper % 100;
 
   return `${gold}g ${silver}s ${remainingCopper}c`;
+}
+
+function formatQuantity(quantity: number) {
+  return quantity.toLocaleString();
 }
 
 function formatTooltipDate(timestamp: number) {
@@ -108,6 +113,7 @@ export default function PriceHistoryGraph({
   const chartData = prices.map((price) => ({
     timestamp: new Date(price.created_at).getTime(),
     price: price.sale_price,
+    quantity: price.total_quantity,
   }));
 
   const xAxisFormatter = getXAxisFormatter(prices);
@@ -123,6 +129,7 @@ export default function PriceHistoryGraph({
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
 
+            {/* Shared time axis */}
             <XAxis
               dataKey="timestamp"
               type="number"
@@ -131,17 +138,42 @@ export default function PriceHistoryGraph({
               tickFormatter={xAxisFormatter}
             />
 
+            {/* Price axis — left */}
             <YAxis
+              yAxisId="price"
+              orientation="left"
               tickFormatter={formatPrice}
+            />
+
+            {/* Quantity axis — right */}
+            <YAxis
+              yAxisId="quantity"
+              orientation="right"
+              tickFormatter={formatQuantity}
+              allowDecimals={false}
             />
 
             <Tooltip
               labelFormatter={(value) =>
                 formatTooltipDate(Number(value))
               }
-              formatter={(value) =>
-                formatPrice(Number(value))
-              }
+              formatter={(value, name) => {
+                if (name === "price") {
+                  return [
+                    formatPrice(Number(value)),
+                    "Price",
+                  ];
+                }
+
+                if (name === "quantity") {
+                  return [
+                    formatQuantity(Number(value)),
+                    "Quantity",
+                  ];
+                }
+
+                return [value, name];
+              }}
               contentStyle={{
                 backgroundColor: "#000",
                 border: "1px solid #555",
@@ -152,11 +184,13 @@ export default function PriceHistoryGraph({
                 color: "#fff",
               }}
               itemStyle={{
-                color: "#facc15",
+                color: "#fff",
               }}
             />
 
+            {/* Price reference lines */}
             <ReferenceLine
+              yAxisId="price"
               y={minPrice}
               stroke="#ef4444"
               strokeDasharray="5 5"
@@ -167,6 +201,7 @@ export default function PriceHistoryGraph({
             />
 
             <ReferenceLine
+              yAxisId="price"
               y={maxPrice}
               stroke="#22c55e"
               strokeDasharray="5 5"
@@ -177,6 +212,7 @@ export default function PriceHistoryGraph({
             />
 
             <ReferenceLine
+              yAxisId="price"
               y={averagePrice}
               stroke="#3b82f6"
               strokeDasharray="5 5"
@@ -186,13 +222,30 @@ export default function PriceHistoryGraph({
               }}
             />
 
+            {/* Price line */}
             <Line
+              yAxisId="price"
               type="linear"
               dataKey="price"
+              name="Price"
               stroke="#facc15"
               strokeWidth={2}
               dot={{ r: 4 }}
               activeDot={{ r: 6 }}
+              connectNulls
+            />
+
+            {/* Quantity line */}
+            <Line
+              yAxisId="quantity"
+              type="linear"
+              dataKey="quantity"
+              name="Quantity"
+              stroke="#22d3ee"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+              connectNulls
             />
           </LineChart>
         </ResponsiveContainer>
