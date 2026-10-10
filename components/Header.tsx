@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getItemIconUrl } from "@/lib/itemIcon";
+import NavigationLoading from "@/components/NavigationLoading";
 
 type Item = {
   id: number;
@@ -16,6 +17,7 @@ export default function Header() {
 
   const [items, setItems] = useState<Item[]>([]);
   const [search, setSearch] = useState("");
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     async function loadItems() {
@@ -40,8 +42,9 @@ export default function Header() {
       : [];
 
   function handleItemClick(item: Item) {
-    router.push(`/item/${item.id}`);
+    setIsNavigating(true);
     setSearch("");
+    router.push(`/item/${item.id}`);
   }
 
   function handleSearchKeyDown(
@@ -58,6 +61,8 @@ export default function Header() {
   }
 
   return (
+    <>
+    {isNavigating && <NavigationLoading />}
     <header className="bg-mist-800 text-white p-4 flex justify-center gap-6">
 
       <div className="relative w-full max-w-[500px]">
@@ -98,5 +103,6 @@ export default function Header() {
         )}
       </div>
     </header>
+    </>
   );
 }

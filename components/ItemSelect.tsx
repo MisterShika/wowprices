@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { getItemIconUrl } from "@/lib/itemIcon";
+import NavigationLoading from "@/components/NavigationLoading";
 
 type Item = {
   id: number;
@@ -17,6 +18,7 @@ export default function ItemSelect() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const router = useRouter();
 
@@ -59,6 +61,14 @@ export default function ItemSelect() {
     setSearch(item.name);
   }
 
+  // Show the loading overlay and navigate
+  function navigateToItem(item: Item) {
+    if (isNavigating) return;
+
+    setIsNavigating(true);
+    router.push(`/item/${item.id}`);
+  }
+
   function handleSearchKeyDown(
     e: React.KeyboardEvent<HTMLInputElement>
   ) {
@@ -68,157 +78,161 @@ export default function ItemSelect() {
 
     // If an item is already selected, navigate to it.
     if (selectedItem) {
-      router.push(`/item/${selectedItem.id}`);
+      navigateToItem(selectedItem);
       return;
     }
 
     // If exactly one search result remains, navigate to it.
     if (filteredItems.length === 1) {
-      router.push(`/item/${filteredItems[0].id}`);
+      navigateToItem(filteredItems[0]);
     }
   }
 
   return (
-    <div className="flex flex-col max-w-lg items-center mt-8 space-y-4 bg-mist-700 p-8 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-white">
-        Search for an item...
-      </h2>
+    <>
+      {isNavigating && <NavigationLoading />}
 
-      {/* Search */}
-      <div className="relative w-80">
-        <input
-          type="text"
-          placeholder="Search for an item..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setSelectedItem(null);
-          }}
-          onKeyDown={handleSearchKeyDown}
-          className="w-full bg-white px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-        />
+      <div className="flex flex-col max-w-lg items-center mt-8 space-y-4 bg-mist-700 p-8 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold text-white">
+          Search for an item...
+        </h2>
 
-        {/* Search results */}
-        {search.trim() && !selectedItem && (
-          <div className="absolute z-20 w-full mt-1 bg-white rounded-md border border-gray-300 shadow-lg max-h-64 overflow-y-auto">
-            {loading ? (
-              <p className="px-4 py-3 text-gray-500">
-                Loading items...
-              </p>
-            ) : filteredItems.length > 0 ? (
-              filteredItems.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleSelectItem(item)}
-                  className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-100"
-                >
-                  <img
-                    src={getItemIconUrl(item.icon)}
-                    alt=""
-                    className="w-8 h-8 rounded"
-                  />
+        {/* Search */}
+        <div className="relative w-80">
+          <input
+            type="text"
+            placeholder="Search for an item..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSelectedItem(null);
+            }}
+            onKeyDown={handleSearchKeyDown}
+            disabled={isNavigating}
+            className="w-full bg-white px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          />
 
-                  <span className="text-gray-800">
-                    {item.name}
-                  </span>
-                </button>
-              ))
-            ) : (
-              <p className="px-4 py-3 text-gray-500">
-                No items found.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+          {/* Search results */}
+          {search.trim() && !selectedItem && (
+            <div className="absolute z-20 w-full mt-1 bg-white rounded-md border border-gray-300 shadow-lg max-h-64 overflow-y-auto">
+              {loading ? (
+                <p className="px-4 py-3 text-gray-500">
+                  Loading items...
+                </p>
+              ) : filteredItems.length > 0 ? (
+                filteredItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleSelectItem(item)}
+                    className="flex items-center gap-3 w-full px-3 py-2 text-left hover:bg-gray-100"
+                  >
+                    <img
+                      src={getItemIconUrl(item.icon)}
+                      alt=""
+                      className="w-8 h-8 rounded"
+                    />
 
-      {/* Selected item confirmation */}
-      {selectedItem && (
-        <>
-          {/* Top endless banner */}
-          <div className="w-full overflow-hidden mt-4">
-            <div className="flex w-max animate-marquee-left">
-              <div className="flex shrink-0 gap-3 pr-3">
-                {marqueeIcons.map((icon, index) => (
-                  <img
-                    key={`top-1-${index}`}
-                    src={getItemIconUrl(icon)}
-                    alt=""
-                    className="w-10 h-10 rounded"
-                  />
-                ))}
-              </div>
+                    <span className="text-gray-800">
+                      {item.name}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="px-4 py-3 text-gray-500">
+                  No items found.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
 
-              <div className="flex shrink-0 gap-3 pr-3">
-                {marqueeIcons.map((icon, index) => (
-                  <img
-                    key={`top-2-${index}`}
-                    src={getItemIconUrl(icon)}
-                    alt=""
-                    className="w-10 h-10 rounded"
-                  />
-                ))}
+        {/* Selected item confirmation */}
+        {selectedItem && (
+          <>
+            {/* Top endless banner */}
+            <div className="w-full overflow-hidden mt-4">
+              <div className="flex w-max animate-marquee-left">
+                <div className="flex shrink-0 gap-3 pr-3">
+                  {marqueeIcons.map((icon, index) => (
+                    <img
+                      key={`top-1-${index}`}
+                      src={getItemIconUrl(icon)}
+                      alt=""
+                      className="w-10 h-10 rounded"
+                    />
+                  ))}
+                </div>
+
+                <div className="flex shrink-0 gap-3 pr-3">
+                  {marqueeIcons.map((icon, index) => (
+                    <img
+                      key={`top-2-${index}`}
+                      src={getItemIconUrl(icon)}
+                      alt=""
+                      className="w-10 h-10 rounded"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Center text */}
-          <div className="text-center py-2">
-            <p className="text-sm uppercase tracking-widest text-gray-300">
-              Viewing the prices for
-            </p>
+            {/* Center text */}
+            <div className="text-center py-2">
+              <p className="text-sm uppercase tracking-widest text-gray-300">
+                Viewing the prices for
+              </p>
 
-            <p className="text-3xl font-bold text-yellow-400 mt-1">
-              {selectedItem.name}
-            </p>
-          </div>
+              <p className="text-3xl font-bold text-yellow-400 mt-1">
+                {selectedItem.name}
+              </p>
+            </div>
 
-          {/* Go */}
+            {/* Go */}
             <button
-            type="button"
-            className="px-6 py-2 bg-yellow-400 text-gray-800 font-bold rounded-md hover:bg-yellow-500"
-            onClick={() => {
-                router.push(`/item/${selectedItem.id}`);
-            }}
+              type="button"
+              disabled={isNavigating}
+              className="px-6 py-2 bg-yellow-400 text-gray-800 font-bold rounded-md hover:bg-yellow-500 disabled:opacity-50"
+              onClick={() => navigateToItem(selectedItem)}
             >
-            Go
+              Go
             </button>
 
-          {/* Bottom endless banner */}
-          <div className="w-full overflow-hidden">
-            <div className="flex w-max animate-marquee-right">
-              <div className="flex shrink-0 gap-3 pr-3">
-                {marqueeIcons.map((icon, index) => (
-                  <img
-                    key={`bottom-1-${index}`}
-                    src={getItemIconUrl(icon)}
-                    alt=""
-                    className="w-10 h-10 rounded"
-                  />
-                ))}
-              </div>
+            {/* Bottom endless banner */}
+            <div className="w-full overflow-hidden">
+              <div className="flex w-max animate-marquee-right">
+                <div className="flex shrink-0 gap-3 pr-3">
+                  {marqueeIcons.map((icon, index) => (
+                    <img
+                      key={`bottom-1-${index}`}
+                      src={getItemIconUrl(icon)}
+                      alt=""
+                      className="w-10 h-10 rounded"
+                    />
+                  ))}
+                </div>
 
-              <div className="flex shrink-0 gap-3 pr-3">
-                {marqueeIcons.map((icon, index) => (
-                  <img
-                    key={`bottom-2-${index}`}
-                    src={getItemIconUrl(icon)}
-                    alt=""
-                    className="w-10 h-10 rounded"
-                  />
-                ))}
+                <div className="flex shrink-0 gap-3 pr-3">
+                  {marqueeIcons.map((icon, index) => (
+                    <img
+                      key={`bottom-2-${index}`}
+                      src={getItemIconUrl(icon)}
+                      alt=""
+                      className="w-10 h-10 rounded"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
 
-      {error && (
-        <p className="text-red-400 text-sm text-center">
-          {error}
-        </p>
-      )}
-    </div>
+        {error && (
+          <p className="text-red-400 text-sm text-center">
+            {error}
+          </p>
+        )}
+      </div>
+    </>
   );
 }
