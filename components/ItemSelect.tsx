@@ -43,9 +43,9 @@ export default function ItemSelect() {
 
   // Filter items as the user types
   const filteredItems =
-    search.trim().length > 0
+    search.trim().length >= 2
       ? items.filter((item) =>
-          item.name.toLowerCase().includes(search.toLowerCase())
+          item.name.toLowerCase().includes(search.trim().toLowerCase())
         )
       : [];
 
@@ -57,6 +57,25 @@ export default function ItemSelect() {
   function handleSelectItem(item: Item) {
     setSelectedItem(item);
     setSearch(item.name);
+  }
+
+  function handleSearchKeyDown(
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) {
+    if (e.key !== "Enter" || search.trim().length < 2) {
+      return;
+    }
+
+    // If an item is already selected, navigate to it.
+    if (selectedItem) {
+      router.push(`/item/${selectedItem.id}`);
+      return;
+    }
+
+    // If exactly one search result remains, navigate to it.
+    if (filteredItems.length === 1) {
+      router.push(`/item/${filteredItems[0].id}`);
+    }
   }
 
   return (
@@ -75,6 +94,7 @@ export default function ItemSelect() {
             setSearch(e.target.value);
             setSelectedItem(null);
           }}
+          onKeyDown={handleSearchKeyDown}
           className="w-full bg-white px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
 

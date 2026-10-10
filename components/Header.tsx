@@ -31,10 +31,10 @@ export default function Header() {
   }, []);
 
   const filteredItems =
-    search.trim().length > 0
+    search.trim().length >= 2
       ? items
           .filter((item) =>
-            item.name.toLowerCase().includes(search.toLowerCase())
+            item.name.toLowerCase().includes(search.trim().toLowerCase())
           )
           .slice(0, 10)
       : [];
@@ -44,17 +44,31 @@ export default function Header() {
     setSearch("");
   }
 
+  function handleSearchKeyDown(
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) {
+    if (e.key !== "Enter" || search.trim().length < 2) {
+      return;
+    }
+
+    // Navigate only if exactly one result remains.
+    if (filteredItems.length === 1) {
+      handleItemClick(filteredItems[0]);
+    }
+  }
+
   return (
     <header className="bg-mist-800 text-white p-4 flex justify-center gap-6">
 
       <div className="relative w-full max-w-[500px]">
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-        />
+      <input
+        type="text"
+        placeholder="Search items..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        onKeyDown={handleSearchKeyDown}
+        className="w-full bg-white text-gray-800 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+      />
 
         {search.trim() && (
           <div className="absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-lg overflow-hidden z-50">
