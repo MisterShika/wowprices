@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cinzelDecorative } from "@/app/fonts";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -72,6 +73,9 @@ export default function Login() {
           </p>
         )}
       </form>
+      <Link href="/forgot-password" className="text-yellow-400 hover:underline">
+        Forgot Password?
+      </Link>
     </main>
   );
 }

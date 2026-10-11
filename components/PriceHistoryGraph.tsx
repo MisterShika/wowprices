@@ -158,14 +158,14 @@ export default function PriceHistoryGraph({
                 formatTooltipDate(Number(value))
               }
               formatter={(value, name) => {
-                if (name === "price") {
+                if (name === "Price" || name === "price") {
                   return [
                     formatPrice(Number(value)),
                     "Price",
                   ];
                 }
 
-                if (name === "quantity") {
+                if (name === "Quantity" || name === "quantity") {
                   return [
                     formatQuantity(Number(value)),
                     "Quantity",
