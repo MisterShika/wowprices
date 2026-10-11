@@ -26,7 +26,7 @@ export default function PriceDateRange({
           key={range.value}
           type="button"
           onClick={() => onChange(range.value)}
-          className={`px-4 py-2 rounded-md font-bold transition ${
+          className={`px-4 py-2 rounded-md font-bold transition-colors duration-300 ${
             value === range.value
               ? "bg-yellow-400 text-gray-800"
               : "bg-mist-700 text-gray-300 hover:bg-mist-600 hover:text-white"

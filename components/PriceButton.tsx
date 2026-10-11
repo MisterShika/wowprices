@@ -15,7 +15,7 @@ export default function PriceButton({ itemId }: Props) {
       <button
         type="button"
         onClick={() => setShowAddPrice(true)}
-        className="px-6 py-2 bg-yellow-400 text-gray-800 font-bold rounded-md hover:bg-yellow-500"
+        className="px-6 py-2 bg-yellow-400 text-gray-800 font-bold rounded-md hover:bg-yellow-500 transition-colors duration-300"
       >
         Add Price
       </button>

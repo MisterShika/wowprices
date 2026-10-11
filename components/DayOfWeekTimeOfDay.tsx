@@ -84,12 +84,12 @@ export default function DayOfWeekTimeOfDay({
   }
 
   return (
-    <div className="bg-mist-800 text-white p-4 rounded-md">
+    <div className="text-white p-4">
       <h2 className="text-xl font-bold mb-4">
         Price by Day and Time
       </h2>
 
-      <div className="overflow-x-auto">
+      <div className=" bg-mist-900 p-4 rounded-md overflow-x-auto">
         <table className="w-full text-center">
           <thead>
             <tr className="border-b border-gray-600">

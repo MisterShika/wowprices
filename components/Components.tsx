@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { getItemIconUrl } from "@/lib/itemIcon";
+import NavigationLoading from "@/components/NavigationLoading";
+import { useState } from "react";
 
 type ComponentItem = {
   id: number;
@@ -32,6 +36,8 @@ export default function Components({ components }: Props) {
     return null;
   }
 
+  const [isNavigating, setIsNavigating] = useState(false);
+
   const currentTotal = components.reduce(
     (total, component) => {
       const price =
@@ -63,6 +69,8 @@ export default function Components({ components }: Props) {
   );
 
   return (
+    <>
+    {isNavigating && <NavigationLoading />}
     <div className="bg-mist-800 text-white rounded-md">
 
       <h2 className="text-xl font-bold mb-3">
@@ -74,6 +82,7 @@ export default function Components({ components }: Props) {
         {components.map((component) => (
           <Link
             key={component.id}
+            onClick={() => setIsNavigating(true)}
             href={`/item/${component.id}`}
             className="flex shrink-0 items-center gap-4 bg-mist-700 p-3 rounded-md hover:bg-mist-600"
           >
@@ -188,5 +197,6 @@ export default function Components({ components }: Props) {
       </div>
 
     </div>
+    </>
   );
 }

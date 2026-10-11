@@ -70,7 +70,7 @@ export default async function MostRecentSubmissions({
   );
 
   return (
-    <div className="bg-mist-800 text-white p-4 rounded-md">
+    <div className="bg-mist-800 text-white p-4 rounded-md max-w-[600px] w-full">
       <h2 className="text-xl font-bold mb-4">
         Most Recent Submissions
       </h2>

@@ -6,12 +6,11 @@ import AveragePrice from "@/components/AveragePrice";
 import CurrentPrice from "@/components/CurrentPrice";
 import MinPrice from "@/components/MinPrice";
 import MaxPrice from "@/components/MaxPrice";
-
 import PriceAnalysis from "@/components/PriceAnalysis";
-
 import Components from "@/components/Components";
 import AuthGate from "@/components/AuthGate";
 import { getItemIconUrl } from "@/lib/itemIcon";
+import CategoryBackLink from "@/components/CategoryBackLink";
 
 type Props = {
   params: Promise<{
@@ -47,7 +46,8 @@ export default async function ItemPage({ params }: Props) {
       current_price,
       min_price,
       max_price,
-      average_price
+      average_price,
+      category_id
     `)
     .eq("id", id)
     .single();
@@ -57,7 +57,6 @@ export default async function ItemPage({ params }: Props) {
       <AuthGate>
         <main>
           <Header />
-
           <div className="text-center mt-8">
             <h1 className="text-2xl font-bold text-red-400">
               Item not found
@@ -66,6 +65,17 @@ export default async function ItemPage({ params }: Props) {
         </main>
       </AuthGate>
     );
+  }
+
+  // Get the item's category for the back link
+  const { data: category, error: categoryError } = await supabase
+    .from("item_categories")
+    .select("id, name, slug")
+    .eq("id", item.category_id)
+    .single();
+
+  if (categoryError) {
+    console.error("Failed to load item category:", categoryError);
   }
 
   // Get price history
@@ -93,7 +103,13 @@ export default async function ItemPage({ params }: Props) {
           icon,
           current_price,
           average_price,
-          purchase_price
+          purchase_price,
+          category_id,
+          item_categories (
+            id,
+            name,
+            slug
+          )
         )
       `)
       .eq("item_id", item.id);
@@ -103,35 +119,28 @@ export default async function ItemPage({ params }: Props) {
   }
 
   const components =
-    (componentData as ComponentRow[] | null)?.map(
-      (row) => ({
-        id: row.component.id,
-        name: row.component.name,
-        icon: row.component.icon,
-        current_price: row.component.current_price,
-        average_price: row.component.average_price,
-        purchase_price: row.component.purchase_price,
-        quantity: row.quantity,
-      })
-    ) ?? [];
+    (componentData as ComponentRow[] | null)?.map((row) => ({
+      id: row.component.id,
+      name: row.component.name,
+      icon: row.component.icon,
+      current_price: row.component.current_price,
+      average_price: row.component.average_price,
+      purchase_price: row.component.purchase_price,
+      quantity: row.quantity,
+    })) ?? [];
 
   function getRarityColor(rarity: string | null) {
     switch (rarity) {
       case "Common":
         return "text-white";
-
       case "Uncommon":
         return "text-green-400";
-
       case "Rare":
         return "text-blue-400";
-
       case "Epic":
         return "text-purple-400";
-
       case "Legendary":
         return "text-orange-400";
-
       default:
         return "text-yellow-400";
     }
@@ -151,32 +160,38 @@ export default async function ItemPage({ params }: Props) {
         <Header />
 
         <div className="text-center">
-
           {/* Top section */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
             {/* Item information */}
-            <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
-              <img
-                src={getItemIconUrl(item.icon)}
-                alt={item.name}
-                className="w-16 h-16 rounded"
-              />
+            <div>
+              <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
+                <img
+                  src={getItemIconUrl(item.icon)}
+                  alt={item.name}
+                  className="w-16 h-16 rounded"
+                />
 
-              <div>
-                <h1
-                  className={`text-3xl font-bold ${getRarityColor(
-                    item.rarity
-                  )}`}
-                >
-                  {item.name}
-                </h1>
+                <div>
+                  <h1
+                    className={`text-3xl font-bold ${getRarityColor(
+                      item.rarity
+                    )}`}
+                  >
+                    {item.name}
+                  </h1>
 
-                <p className="text-gray-300 mt-1">
-                  Vendor Price:{" "}
-                  {formatPrice(item.base_sale_price)}
-                </p>
+                  <p className="text-gray-300 mt-1">
+                    Vendor Price: {formatPrice(item.base_sale_price)}
+                  </p>
+                </div>
               </div>
+
+              {category && (
+                <CategoryBackLink
+                  slug={category.slug}
+                  name={category.name}
+                />
+              )}
             </div>
 
             {/* Price statistics */}
@@ -186,24 +201,17 @@ export default async function ItemPage({ params }: Props) {
                 average={item.average_price ?? 0}
               />
 
-              <AveragePrice
-                price={item.average_price ?? 0}
-              />
+              <AveragePrice price={item.average_price ?? 0} />
 
-              <MaxPrice
-                price={item.max_price ?? 0}
-              />
+              <MaxPrice price={item.max_price ?? 0} />
 
-              <MinPrice
-                price={item.min_price ?? 0}
-              />
+              <MinPrice price={item.min_price ?? 0} />
             </div>
 
             {/* Add price button */}
             <div className="md:col-span-1 flex flex-col justify-center px-4">
               <PriceButton itemId={item.id} />
             </div>
-
           </div>
 
           {/* Price analysis */}
@@ -217,17 +225,14 @@ export default async function ItemPage({ params }: Props) {
           {/* Components */}
           {components.length > 0 && (
             <div>
-              <Components
-                components={components}
-              />
+              <Components components={components} />
             </div>
           )}
 
           {/* Recent submissions */}
-          <MostRecentSubmissions
-            itemId={item.id}
-          />
-
+          <div className="mt-8 flex justify-center">
+            <MostRecentSubmissions itemId={item.id} />
+          </div>
         </div>
       </main>
     </AuthGate>

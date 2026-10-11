@@ -44,7 +44,7 @@ export default function OopsieButton({
       onClick={handleDelete}
       disabled={deleting}
       title="Oopsie! Delete this submission"
-      className="ml-3 text-red-500 hover:text-red-400 font-bold text-lg disabled:opacity-50"
+      className="ml-3 text-red-500 hover:text-red-400 font-bold text-lg disabled:opacity-50 cursor-pointer"
     >
       ×
     </button>

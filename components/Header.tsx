@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getItemIconUrl } from "@/lib/itemIcon";
 import NavigationLoading from "@/components/NavigationLoading";
+import CategoriesDropdown from "@/components/CategoriesDropdown";
 
 type Item = {
   id: number;
@@ -63,7 +64,7 @@ export default function Header() {
   return (
     <>
     {isNavigating && <NavigationLoading />}
-    <header className="bg-mist-800 text-white p-4 flex justify-center gap-6">
+    <header className="bg-mist-800 text-white p-4 flex justify-center gap-6 items-center">
 
       <div className="relative w-full max-w-[500px]">
       <input
@@ -102,6 +103,8 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      <CategoriesDropdown />
     </header>
     </>
   );

@@ -116,7 +116,7 @@ export default function TimeOfDay({ prices }: Props) {
           return (
             <div
               key={period.name}
-              className="bg-mist-700 p-3 rounded-md"
+              className="bg-mist-900 p-3 rounded-md"
             >
               <h3 className="font-semibold">
                 {period.name}

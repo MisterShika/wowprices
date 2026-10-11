@@ -96,7 +96,7 @@ export default function DayOfWeek({ prices }: Props) {
           return (
             <div
               key={day.name}
-              className="bg-mist-700 p-3 rounded-md"
+              className="bg-mist-900 p-3 rounded-md"
             >
               <h3 className="font-semibold text-white">
                 {day.name}
