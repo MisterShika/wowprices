@@ -6,11 +6,32 @@ import { supabase } from "@/lib/supabase";
 
 type AddPriceProps = {
   itemId: number;
+  itemName: string;
+  rarity: string;
   onClose: () => void;
 };
 
+    function getRarityColor(rarity: string | null) {
+      switch (rarity) {
+        case "Common":
+          return "text-white";
+        case "Uncommon":
+          return "text-green-400";
+        case "Rare":
+          return "text-blue-400";
+        case "Epic":
+          return "text-purple-400";
+        case "Legendary":
+          return "text-orange-400";
+        default:
+          return "text-yellow-400";
+      }
+    }
+
 export default function AddPrice({
   itemId,
+  itemName,
+  rarity,
   onClose,
 }: AddPriceProps) {
   const router = useRouter();
@@ -30,6 +51,9 @@ export default function AddPrice({
     const silverValue = Number(silver) || 0;
     const copperValue = Number(copper) || 0;
     const quantityValue = Number(quantity) || 0;
+
+
+
 
     const totalCopper =
       goldValue * 10000 +
@@ -95,9 +119,13 @@ export default function AddPrice({
           ×
         </button>
 
-        <h2 className="text-2xl font-bold text-yellow-400 mb-6 text-center">
-          Add Price
+        <h2 className="text-2xl font-bold text-yellow-400 mb-2 text-center">
+          Adding price to...
         </h2>
+
+        <h3 className={`text-lg font-semibold mb-4 text-center ${getRarityColor(rarity)}`}>
+          {itemName ?? "Item"}
+        </h3>
 
         <form
           onSubmit={handleSubmit}

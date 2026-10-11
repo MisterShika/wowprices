@@ -1,5 +1,6 @@
 import { getItemIconUrl } from "@/lib/itemIcon";
 import Link from "next/link";
+import PriceButton from "@/components/PriceButton";
 
 type SingleTileProps = {
   id: number;
@@ -10,7 +11,7 @@ type SingleTileProps = {
   max_price: number | null;
   average_price: number | null;
   last_submitted_at: string | null;
-  rarity: string | null;
+  rarity: string;
   onNavigate: () => void;
 };
 
@@ -89,38 +90,48 @@ export default function SingleTile({
   onNavigate,
 }: SingleTileProps) {
   return (
-    <Link href={`/item/${id}`} className="bg-mist-700 hover:bg-mist-600 text-white rounded-lg p-4 border border-mist-600 transition-colors duration-300" onClick={onNavigate}>
+  <div className="bg-mist-700 hover:bg-mist-600 text-white rounded-lg border border-mist-600 transition-colors duration-300 flex flex-col">
+    <Link
+      href={`/item/${id}`}
+      onClick={onNavigate}
+      className="rounded-t-lg p-4 flex-1"
+    >
       <div className="flex justify-between gap-3 mb-4">
         <div>
-            <img
+          <img
             src={getItemIconUrl(icon)}
             alt=""
             className="w-12 h-12 rounded"
-            />
-            <h2 className={`font-bold text-lg ${getRarityColor(rarity)}`}>{name}</h2>
+          />
+          <h2 className={`font-bold text-lg ${getRarityColor(rarity)}`}>
+            {name}
+          </h2>
         </div>
+
         <div className="text-right">
-            <p className="text-gray-400 text-sm">Last updated:</p>
-            <p className="text-gray-400 text-sm">{formatLastSubmitted(last_submitted_at)}</p>
+          <p className="text-gray-400 text-sm">Last updated:</p>
+          <p className="text-gray-400 text-sm">
+            {formatLastSubmitted(last_submitted_at)}
+          </p>
         </div>
       </div>
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between gap-4">
           <span className="text-gray-400">Current</span>
-            <span
+          <span
             className={`font-bold ${
-                current_price === null || average_price === null
+              current_price === null || average_price === null
                 ? "text-yellow-400"
                 : current_price < average_price
-                    ? "text-red-500"
-                    : current_price > average_price
+                  ? "text-red-500"
+                  : current_price > average_price
                     ? "text-green-500"
                     : "text-yellow-400"
             }`}
-            >
+          >
             {formatPrice(current_price)}
-            </span>
+          </span>
         </div>
 
         <div className="flex justify-between gap-4">
@@ -139,5 +150,10 @@ export default function SingleTile({
         </div>
       </div>
     </Link>
-  );
+
+    <div className="px-4 flex justify-center">
+      <PriceButton itemId={id} itemName={name} rarity={rarity} />
+    </div>
+  </div>
+);
 }

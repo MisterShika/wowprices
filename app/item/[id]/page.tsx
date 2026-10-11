@@ -161,7 +161,7 @@ export default async function ItemPage({ params }: Props) {
 
         <div className="text-center">
           {/* Top section */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4">
             {/* Item information */}
             <div>
               <div className="md:col-span-1 flex flex-row items-center gap-4 max-sm:flex-col justify-center">
@@ -210,7 +210,7 @@ export default async function ItemPage({ params }: Props) {
 
             {/* Add price button */}
             <div className="md:col-span-1 flex flex-col justify-center px-4">
-              <PriceButton itemId={item.id} />
+              <PriceButton itemId={item.id} itemName={item.name} rarity={item.rarity} />
             </div>
           </div>
 
