@@ -21,7 +21,7 @@ export default function ItemTileList({
     <>
       {isNavigating && <NavigationLoading />}
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
         {items.map((item) => (
           <SingleTile
             key={item.id}
