@@ -4,7 +4,17 @@ import { useState } from "react";
 import SingleTile from "@/components/SingleTile";
 import NavigationLoading from "@/components/NavigationLoading";
 
-export default function ItemTileList({ items }: { items: any[] }) {
+type Props = {
+  items: any[];
+  listId?: string;
+  onRemove?: (itemId: number) => void;
+};
+
+export default function ItemTileList({
+  items,
+  listId,
+  onRemove,
+}: Props) {
   const [isNavigating, setIsNavigating] = useState(false);
 
   return (
@@ -17,6 +27,8 @@ export default function ItemTileList({ items }: { items: any[] }) {
             key={item.id}
             {...item}
             onNavigate={() => setIsNavigating(true)}
+            listId={listId}
+            onRemove={onRemove}
           />
         ))}
       </div>

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { getItemIconUrl } from "@/lib/itemIcon";
 import NavigationLoading from "@/components/NavigationLoading";
 import CategoriesDropdown from "@/components/CategoriesDropdown";
+import ListsDropdown from "@/components/ListsDropdown";
 
 type Item = {
   id: number;
@@ -65,6 +66,8 @@ export default function Header() {
     <>
     {isNavigating && <NavigationLoading />}
     <header className="bg-mist-800 text-white p-4 flex justify-center gap-6 items-center">
+
+      <ListsDropdown />
 
       <div className="relative w-full max-w-[500px]">
       <input

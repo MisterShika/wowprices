@@ -13,6 +13,8 @@ type SingleTileProps = {
   last_submitted_at: string | null;
   rarity: string;
   onNavigate: () => void;
+  listId?: string;
+  onRemove?: (itemId: number) => void;
 };
 
 function formatPrice(copper: number | null) {
@@ -88,14 +90,30 @@ export default function SingleTile({
   last_submitted_at,
   rarity,
   onNavigate,
+  listId,
+  onRemove,
 }: SingleTileProps) {
   return (
   <div className="bg-mist-700 hover:bg-mist-600 text-white rounded-lg border border-mist-600 transition-colors duration-300 flex flex-col">
+
+    {listId && onRemove && (
+      <div>
+        <button
+          type="button"
+          onClick={() => onRemove(id)}
+          className="float-right flex justify-center cursor-pointer text-red-400 hover:text-red-600 transition-colors duration-300 mr-2 text-xl "
+        >
+           ×
+        </button>
+      </div>
+    )}
+
     <Link
       href={`/item/${id}`}
       onClick={onNavigate}
-      className="rounded-t-lg p-4 flex-1"
+      className="rounded-t-lg px-4 py-2 flex-1"
     >
+
       <div className="flex justify-between gap-3 mb-4">
         <div>
           <img
@@ -154,6 +172,9 @@ export default function SingleTile({
     <div className="px-4 flex justify-center">
       <PriceButton itemId={id} itemName={name} rarity={rarity} />
     </div>
+
+
+
   </div>
 );
 }

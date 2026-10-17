@@ -11,6 +11,7 @@ import Components from "@/components/Components";
 import AuthGate from "@/components/AuthGate";
 import { getItemIconUrl } from "@/lib/itemIcon";
 import CategoryBackLink from "@/components/CategoryBackLink";
+import AddToListButton from "@/components/AddToListButton";
 
 type Props = {
   params: Promise<{
@@ -211,6 +212,8 @@ export default async function ItemPage({ params }: Props) {
             {/* Add price button */}
             <div className="md:col-span-1 flex flex-col justify-center px-4">
               <PriceButton itemId={item.id} itemName={item.name} rarity={item.rarity} />
+
+              <AddToListButton itemId={item.id} />
             </div>
           </div>
 
