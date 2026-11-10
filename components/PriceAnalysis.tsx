@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PriceDateRange from "@/components/PriceDateRange";
 import PriceHistoryGraph from "@/components/PriceHistoryGraph";
 import TimeOfDay from "@/components/TimeOfDay";
@@ -30,42 +31,45 @@ export default function PriceAnalysis({
 }: Props) {
   const [range, setRange] = useState<Range>("all");
 
-  function getStartDate(range: Range) {
-    if (range === "all") {
-      return null;
+  // Only calculate the date after the component has hydrated.
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  // Filter prices based on the selected date range.
+  const filteredPrices = useMemo(() => {
+    // Before hydration, or when showing all prices,
+    // display the complete price history.
+    if (range === "all" || !now) {
+      return prices;
     }
 
-    const now = new Date();
+    let startDate: Date;
 
     if (range === "today") {
-      return new Date(
+      startDate = new Date(
         now.getFullYear(),
         now.getMonth(),
         now.getDate()
       );
+    } else {
+      const days =
+        range === "7d"
+          ? 7
+          : range === "30d"
+            ? 30
+            : 90;
+
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - days);
     }
 
-    const days =
-      range === "7d"
-        ? 7
-        : range === "30d"
-          ? 30
-          : 90;
-
-    const start = new Date(now);
-    start.setDate(start.getDate() - days);
-
-    return start;
-  }
-
-  const startDate = getStartDate(range);
-
-  const filteredPrices = startDate
-    ? prices.filter(
-        (price) =>
-          new Date(price.created_at) >= startDate
-      )
-    : prices;
+    return prices.filter(
+      (price) => new Date(price.created_at) >= startDate
+    );
+  }, [prices, range, now]);
 
   return (
     <>

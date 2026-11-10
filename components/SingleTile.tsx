@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState, useEffect } from "react";
 import { getItemIconUrl } from "@/lib/itemIcon";
 import Link from "next/link";
 import PriceButton from "@/components/PriceButton";
@@ -33,11 +37,19 @@ function formatPrice(copper: number | null) {
     .join(" ") || "0c";
 }
 
-function formatLastSubmitted(date: string | null) {
-  if (!date) return "Never";
+function formatLastSubmitted(
+  date: string | null,
+  now: number,
+  locale: string,
+  timeZone: string
+) {
+  if (date === null) return "Never";
 
   const timestamp = new Date(date).getTime();
-  const diff = Date.now() - timestamp;
+
+  if (!Number.isFinite(timestamp)) return "Date unavailable";
+
+  const diff = now - timestamp;
 
   if (diff < 0) return "Just now";
 
@@ -50,7 +62,8 @@ function formatLastSubmitted(date: string | null) {
   if (hours < 24) return `${hours}h ago`;
   if (days < 30) return `${days}d ago`;
 
-  return new Date(date).toLocaleDateString("en-US", {
+  return new Date(timestamp).toLocaleDateString(locale, {
+    timeZone,
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -58,25 +71,20 @@ function formatLastSubmitted(date: string | null) {
 }
 
 function getRarityColor(rarity: string | null) {
-    switch (rarity) {
-        case "Common":
-        return "text-white";
-
-        case "Uncommon":
-        return "text-green-400";
-
-        case "Rare":
-        return "text-blue-400";
-
-        case "Epic":
-        return "text-purple-400";
-
-        case "Legendary":
-        return "text-orange-400";
-
-        default:
-        return "text-yellow-400";
-    }
+  switch (rarity) {
+    case "Common":
+      return "text-white";
+    case "Uncommon":
+      return "text-green-400";
+    case "Rare":
+      return "text-blue-400";
+    case "Epic":
+      return "text-purple-400";
+    case "Legendary":
+      return "text-orange-400";
+    default:
+      return "text-yellow-400";
+  }
 }
 
 export default function SingleTile({
@@ -93,88 +101,130 @@ export default function SingleTile({
   listId,
   onRemove,
 }: SingleTileProps) {
+  const [browserSettings, setBrowserSettings] = useState<{
+    locale: string;
+    timeZone: string;
+    now: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setBrowserSettings({
+      locale: navigator.language || "en-US",
+      timeZone:
+        Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
+      now: Date.now(),
+    });
+  }, []);
+
+  // Keep relative timestamps updated.
+  useEffect(() => {
+    if (!browserSettings) return;
+
+    const interval = setInterval(() => {
+      setBrowserSettings((previous) =>
+        previous
+          ? { ...previous, now: Date.now() }
+          : previous
+      );
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [browserSettings !== null]);
+
+  const lastUpdated = browserSettings
+    ? formatLastSubmitted(
+        last_submitted_at,
+        browserSettings.now,
+        browserSettings.locale,
+        browserSettings.timeZone
+      )
+    : "—";
+
   return (
-  <div className="bg-mist-700 hover:bg-mist-600 text-white rounded-lg border border-mist-600 transition-colors duration-300 flex flex-col">
+    <div className="bg-mist-700 hover:bg-mist-600 text-white rounded-lg border border-mist-600 transition-colors duration-300 flex flex-col">
 
-    {listId && onRemove && (
-      <div>
-        <button
-          type="button"
-          onClick={() => onRemove(id)}
-          className="float-right flex justify-center cursor-pointer text-red-400 hover:text-red-600 transition-colors duration-300 mr-2 text-xl "
-        >
-           ×
-        </button>
-      </div>
-    )}
-
-    <Link
-      href={`/item/${id}`}
-      onClick={onNavigate}
-      className="rounded-t-lg px-4 py-2 flex-1"
-    >
-
-      <div className="flex justify-between gap-3 mb-4">
+      {listId && onRemove && (
         <div>
-          <img
-            src={getItemIconUrl(icon)}
-            alt=""
-            className="w-12 h-12 rounded"
-          />
-          <h2 className={`font-bold text-lg ${getRarityColor(rarity)}`}>
-            {name}
-          </h2>
-        </div>
-
-        <div className="text-right">
-          <p className="text-gray-400 text-sm">Last updated:</p>
-          <p className="text-gray-400 text-sm">
-            {formatLastSubmitted(last_submitted_at)}
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Current</span>
-          <span
-            className={`font-bold ${
-              current_price === null || average_price === null
-                ? "text-yellow-400"
-                : current_price < average_price
-                  ? "text-red-500"
-                  : current_price > average_price
-                    ? "text-green-500"
-                    : "text-yellow-400"
-            }`}
+          <button
+            type="button"
+            onClick={() => onRemove(id)}
+            className="float-right flex justify-center cursor-pointer text-red-400 hover:text-red-600 transition-colors duration-300 mr-2 text-xl"
           >
-            {formatPrice(current_price)}
-          </span>
+            ×
+          </button>
+        </div>
+      )}
+
+      <Link
+        href={`/item/${id}`}
+        onClick={onNavigate}
+        className="rounded-t-lg px-4 py-2 flex-1"
+      >
+        <div className="flex justify-between gap-3 mb-4">
+          <div>
+            <img
+              src={getItemIconUrl(icon)}
+              alt=""
+              className="w-12 h-12 rounded"
+            />
+
+            <h2 className={`font-bold text-lg ${getRarityColor(rarity)}`}>
+              {name}
+            </h2>
+          </div>
+
+          <div className="text-right">
+            <p className="text-gray-400 text-sm">Last updated:</p>
+
+            <p className="text-gray-400 text-sm">
+              {lastUpdated}
+            </p>
+          </div>
         </div>
 
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Minimum</span>
-          <span>{formatPrice(min_price)}</span>
-        </div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Current</span>
 
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Maximum</span>
-          <span>{formatPrice(max_price)}</span>
-        </div>
+            <span
+              className={`font-bold ${
+                current_price === null || average_price === null
+                  ? "text-yellow-400"
+                  : current_price < average_price
+                    ? "text-red-500"
+                    : current_price > average_price
+                      ? "text-green-500"
+                      : "text-yellow-400"
+              }`}
+            >
+              {formatPrice(current_price)}
+            </span>
+          </div>
 
-        <div className="flex justify-between gap-4">
-          <span className="text-gray-400">Average</span>
-          <span>{formatPrice(average_price)}</span>
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Minimum</span>
+            <span>{formatPrice(min_price)}</span>
+          </div>
+
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Maximum</span>
+            <span>{formatPrice(max_price)}</span>
+          </div>
+
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-400">Average</span>
+            <span>{formatPrice(average_price)}</span>
+          </div>
         </div>
+      </Link>
+
+      <div className="px-4 flex justify-center">
+        <PriceButton
+          itemId={id}
+          itemName={name}
+          rarity={rarity}
+        />
       </div>
-    </Link>
-
-    <div className="px-4 flex justify-center">
-      <PriceButton itemId={id} itemName={name} rarity={rarity} />
     </div>
-
-
-
-  </div>
-);
+  );
 }
